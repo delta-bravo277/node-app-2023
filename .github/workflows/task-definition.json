@@ -1,5 +1,5 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:ap-south-1:168082689495:task-definition/ecs-deploy:1",
+    "taskDefinitionArn": "arn:aws:ecs:ap-south-1:168082689495:task-definition/sample-app-task:1",
     "containerDefinitions": [
         {
             "name": "ecs-deploy-container",
