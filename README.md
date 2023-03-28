@@ -11,4 +11,11 @@
    
     2d. Configure Workflow -> Login to Amazon ECR
     2e. Configure Workflow -> Build, tag, and push docker image to Amazon ECR
-3. 
+
+==================================================
+
+For image tagging : 
+
+    github.run_number -> appends current number of github workflow as docker image tag 
+                        (also count failed workflow)
+    
