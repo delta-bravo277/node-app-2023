@@ -1,9 +1,9 @@
 name: Build , TAG and Push NGINX Image to ECR
 
 on:
-   workflow_dispatch: 
-  #  push:
-  #       branches: [main]
+  #  workflow_dispatch: 
+    push:
+       branches: [main]
 
 env:
   AWS_REGION: ap-south-1  
@@ -16,6 +16,27 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+      with:
+          fetch-depth: 0
+
+    - name: Determine version number
+      id: determine-version
+      run: |
+          LATEST_TAG=$(git describe --abbrev=0 --tags)
+          echo "$LATEST_TAG"
+          if [[ "$LATEST_TAG" == "" ]]; then
+            NEW_TAG="1.0.0"
+          else
+            SEMVER_REGEX="^v([0-9]+)\.([0-9]+)\.([0-9]+)$"
+            if [[ "$LATEST_TAG" =~ $SEMVER_REGEX ]]; then
+              MAJOR="${BASH_REMATCH[1]}"
+              MINOR="${BASH_REMATCH[2]}"
+              PATCH="${BASH_REMATCH[3]}"
+              NEW_TAG="v$MAJOR.$MINOR.$((PATCH+1))"
+            fi
+          fi
+          echo "::set-output name=new_tag::$NEW_TAG"
+          echo $NEW_TAG
   
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -24,7 +45,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
   
-    - name: Login to Amazon ECR
+    - name: Login to Amazon ECR   #To get ECR registry name
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
@@ -32,9 +53,8 @@ jobs:
       env:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         REPOSITORY: ga-ecs
-        IMAGE_TAG: ${{ github.run_number }}
+        NEW_TAG: ${{ steps.determine-version.outputs.new_tag }}
       run: |
-        tag_v=$(git describe --tags $(git rev-list --tags --max-count=1))
-        tag=$(echo $tag_v | sed 's/v//')
-        docker build -t $REGISTRY/$REPOSITORY:$tag .
-        docker push $REGISTRY/$REPOSITORY:$tag
+        docker build -t $REGISTRY/$REPOSITORY:$NEW_TAG .
+        docker push $REGISTRY/$REPOSITORY:$NEW_TAG
+        echo "$REGISTRY/$REPOSITORY:$NEW_TAG"
