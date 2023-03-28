@@ -1,4 +1,4 @@
-name: Build and Push Image to ECR
+name: Build , TAG and Push NGINX Image to ECR
 
 on:
    workflow_dispatch: 
