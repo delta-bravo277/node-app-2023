@@ -32,5 +32,5 @@ jobs:
         REPOSITORY: ga-ecs
         IMAGE_TAG: ${{ github.run_number }}
       run: |
-        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG Dockerfile
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
