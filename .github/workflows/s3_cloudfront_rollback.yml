@@ -13,9 +13,10 @@ jobs:
 
     steps:
     - name: Checkout
-      id: prev_tag
-      uses: actions/checkout@v3
+      id: prev_tag  
+      uses: actions/checkout@v3     #To fetch the history (including tags) from within a shallow clone
     - run: |
+          git fetch --prune --unshallow  
           echo "PREV_TAG=$(git tag $(git rev-list --tags --skip=1 --max-count=1))" >> $GITHUB_OUTPUT
     
     - name: Checkout to Previous Tag 
