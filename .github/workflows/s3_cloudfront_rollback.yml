@@ -1,0 +1,17 @@
+name: Build and Deploy React App to CloudFront
+on:
+   workflow_dispatch:
+jobs:
+  build-and-deploy:
+    name: Rollback and Deploy
+    runs-on: ubuntu-latest
+    env:
+      BUCKET: github-action-nginx
+      DIST: build
+      REGION: ap-south-1
+      DIST_ID: E118ZAQXPR2IFW
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - run: git checkout tags/$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1)
