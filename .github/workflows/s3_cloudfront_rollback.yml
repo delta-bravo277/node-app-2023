@@ -15,5 +15,5 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
     - run: 
-          PREV_TAG=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))
+          PREV_TAG=$(git tag $(git rev-list --tags --skip=1 --max-count=1))
           echo $PREV_TAG
