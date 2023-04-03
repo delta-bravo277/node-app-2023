@@ -1,4 +1,4 @@
-name: Build and Deploy React App to CloudFront
+name: Rollback and Deploy to CloudFront
 on:
    workflow_dispatch:
 jobs:
