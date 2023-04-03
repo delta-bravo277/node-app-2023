@@ -14,4 +14,4 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-    - run: git checkout tags/$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1)
+    - run: git checkout tags/$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))
