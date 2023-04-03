@@ -12,46 +12,38 @@ jobs:
       DIST_ID: E118ZAQXPR2IFW
 
     steps:
-    - name: Checkout
-      id: prev_tag  
+    - name: Checkout  
       uses: actions/checkout@v3     #To fetch the history (including tags) from within a shallow clone
     - run: |
-          git fetch --prune --unshallow  
-          # echo "PREV_TAG=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))" >> $GITHUB_OUTPUT
-    
-    - name: Checkout to Previous Tag 
-      env:
-        PREV_TAG: ${{ steps.prev_tag.outputs.prev_tag }}
+          git fetch --prune --unshallow 
+          PREV_TAG=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))
+          git checkout tags/$PREV_TAG
+  
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.REGION }}
+
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '12'
+
+    - name: Install Dependencies
       run: |
-        PREV_TAG=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))
-        git checkout tags/$PREV_TAG
-    
-    
-    # - name: Configure AWS Credentials
-    #   uses: aws-actions/configure-aws-credentials@v1
-    #   with:
-    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #     aws-region: ${{ env.REGION }}
+        node --version
+        npm install
 
-    # - uses: actions/setup-node@v2
-    #   with:
-    #     node-version: '12'
+    - name: Build Static Website
+      run: npm run build
 
-    # - name: Install Dependencies
-    #   run: |
-    #     node --version
-    #     npm install
+    - name: Copy files to the production website with the AWS CLI
+      run: |
+        aws s3 sync --delete ${{ env.DIST }} s3://${{ env.BUCKET }}
 
-    # - name: Build Static Website
-    #   run: npm run build
-
-    # - name: Copy files to the production website with the AWS CLI
-    #   run: |
-    #     aws s3 sync --delete ${{ env.DIST }} s3://${{ env.BUCKET }}
-
-    # - name: Copy files to the production website with the AWS CLI
-    #   run: |
-    #     aws cloudfront create-invalidation \
-    #       --distribution-id ${{ env.DIST_ID }} \
-    #       --paths "/*"
+    - name: Copy files to the production website with the AWS CLI
+      run: |
+        aws cloudfront create-invalidation \
+          --distribution-id ${{ env.DIST_ID }} \
+          --paths "/*"
