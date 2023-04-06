@@ -36,13 +36,13 @@ jobs:
     #     echo $NEW_TAG
     #     echo $PART
 
-    - name: Configure AWS Credentials
+    - name: Configure AWS Credentials v2
       # if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       uses: aws-actions/configure-aws-credentials@v2
       with:
         # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        role-to-assume: ${{ AWS_GA_ROLE }}
+        role-to-assume: ${{ secrets.AWS_GA_ROLE }}
         aws-region: ${{ env.REGION }}
 
     - uses: actions/setup-node@v2
