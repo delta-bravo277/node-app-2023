@@ -17,31 +17,32 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Assign or Get Tag
-      id: get-tag
-      uses: anothrNick/github-tag-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        REPO_OWNER: delta-bravo277
-        WITH_V: true
-        DEFAULT_BUMP: none
-        DRY_RUN: false
+    # - name: Assign or Get Tag
+    #   id: get-tag
+    #   uses: anothrNick/github-tag-action@master
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     REPO_OWNER: delta-bravo277
+    #     WITH_V: true
+    #     DEFAULT_BUMP: none
+    #     DRY_RUN: false
         
-    - name: Print tag
-      id: determine-tag
-      env:
-        NEW_TAG: ${{ steps.get-tag.outputs.tag }}
-        PART: ${{ steps.get-tag.outputs.part }}
-      run: |
-        echo $NEW_TAG
-        echo $PART
+    # - name: Print tag
+    #   id: determine-tag
+    #   env:
+    #     NEW_TAG: ${{ steps.get-tag.outputs.tag }}
+    #     PART: ${{ steps.get-tag.outputs.part }}
+    #   run: |
+    #     echo $NEW_TAG
+    #     echo $PART
 
     - name: Configure AWS Credentials
-      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-      uses: aws-actions/configure-aws-credentials@v1
+      # if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+      uses: aws-actions/configure-aws-credentials@v2
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        role-to-assume: ${{ AWS_GA_ROLE }}
         aws-region: ${{ env.REGION }}
 
     - uses: actions/setup-node@v2
@@ -49,23 +50,23 @@ jobs:
         node-version: '12'
 
     - name: Install Dependencies
-      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+      # if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
         node --version
         npm install
 
     - name: Build Static Website
-      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+      # if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: npm run build
 
     - name: Copy files to the production website with the AWS CLI
-      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+      # if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
         aws s3 sync --delete ${{ env.DIST }} s3://${{ env.BUCKET }}
 
-    - name: Copy files to the production website with the AWS CLI
-      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-      run: |
-        aws cloudfront create-invalidation \
-          --distribution-id ${{ env.DIST_ID }} \
-          --paths "/*"
+    # - name: Copy files to the production website with the AWS CLI
+    #   if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+    #   run: |
+    #     aws cloudfront create-invalidation \
+    #       --distribution-id ${{ env.DIST_ID }} \
+    #       --paths "/*"
