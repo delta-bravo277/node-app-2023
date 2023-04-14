@@ -60,13 +60,11 @@ jobs:
       # if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
          npm run build
-         mv build/ ${{ env.NEW_TAG }}/
-
 
     - name: Copy files to the production website with the AWS CLI
       # if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
-        aws s3 sync --delete ${{ env.DIST }} s3://${{ env.BUCKET }}
+        aws s3 sync --delete ${{ env.DIST }} s3://${{ env.BUCKET }}/${{ env.NEW_TAG }}/*
 
     # - name: Copy files to the production website with the AWS CLI
     #   if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
