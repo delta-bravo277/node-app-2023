@@ -89,6 +89,10 @@ jobs:
     - name: Create new cache invalidation
       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
+
+        aws cloudfront wait distribution-deployed \
+        --id ${{ env.DIST_ID }}  --region ${{ env.REGION }}
+
         aws cloudfront create-invalidation \
         --distribution-id ${{ env.DIST_ID }} \
         --paths "/*" --region ${{ env.REGION }}
