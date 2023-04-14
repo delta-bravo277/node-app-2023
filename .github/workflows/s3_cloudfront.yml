@@ -83,8 +83,8 @@ jobs:
         --id ${{ env.DIST_ID }}  --region ${{ env.REGION }} --if-match="$etag" \
         --distribution-config file://updated-config.json
 
-        aws cloudfront wait distribution-deployed \
-        --id ${{ env.DIST_ID }}  --region ${{ env.REGION }}
+        # aws cloudfront wait distribution-deployed \
+        # --id ${{ env.DIST_ID }}  --region ${{ env.REGION }}
 
     - name: Create new cache invalidation
       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
