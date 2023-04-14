@@ -86,14 +86,14 @@ jobs:
       run: |
         aws s3 sync ${{ env.DIST }} s3://${{ env.BUCKET }}/${{ steps.get-tag.outputs.tag }}/
 
-    - name: Create new cache invalidation
-      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-      run: |
+    # - name: Create new cache invalidation
+    #   if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+    #   run: |
 
-        aws cloudfront wait distribution-deployed \
-        --id ${{ env.DIST_ID }}  --region ${{ env.REGION }}
+    #     aws cloudfront wait distribution-deployed \
+    #     --id ${{ env.DIST_ID }}  --region ${{ env.REGION }}
 
-        aws cloudfront create-invalidation \
-        --distribution-id ${{ env.DIST_ID }} \
-        --paths "/*" --region ${{ env.REGION }}
+    #     aws cloudfront create-invalidation \
+    #     --distribution-id ${{ env.DIST_ID }} \
+    #     --paths "/*" --region ${{ env.REGION }}
 
