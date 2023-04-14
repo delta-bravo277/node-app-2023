@@ -66,9 +66,9 @@ jobs:
     - name: Copy files to the production website with the AWS CLI
       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
-        aws s3 sync --delete ${{ env.DIST }} s3://${{ env.BUCKET }}/${{ steps.get-tag.outputs.tag }}/
+        aws s3 sync s3://${{ env.BUCKET }}/${{ steps.get-tag.outputs.tag }}/
 
-    - name: Cloudfront Cache Invalidation
+    - name: Update Cloudfront Distribution
       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
 
@@ -83,6 +83,13 @@ jobs:
         --id ${{ env.DIST_ID }}  --region ${{ env.REGION }} --if-match="$etag" \
         --distribution-config file://updated-config.json
 
-        # aws cloudfront create-invalidation \
-        #   --distribution-id ${{ env.DIST_ID }} \
-        #   --paths "/*"
+        aws cloudfront wait distribution-deployed \
+        --id ${{ env.DIST_ID }}  --region ${{ env.REGION }}
+
+    - name: Create new cache invalidation
+      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+      run: |
+        aws cloudfront create-invalidation \
+        --distribution-id ${{ env.DIST_ID }} \
+        --paths "/*" --region ${{ env.REGION }}
+
