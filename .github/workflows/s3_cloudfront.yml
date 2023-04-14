@@ -67,9 +67,9 @@ jobs:
       run: |
         aws s3 sync --delete ${{ env.DIST }} s3://${{ env.BUCKET }}/${{ steps.get-tag.outputs.tag }}/
 
-    # - name: Cloudfront Cache Invalidation
-    #   if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-    #   run: |
-    #     aws cloudfront create-invalidation \
-    #       --distribution-id ${{ env.DIST_ID }} \
-    #       --paths "/${{ steps.get-tag.outputs.tag }}/*"
+    - name: Cloudfront Cache Invalidation
+      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+      run: |
+        aws cloudfront create-invalidation \
+          --distribution-id ${{ env.DIST_ID }} \
+          --paths "/${{ steps.get-tag.outputs.tag }}/*"
