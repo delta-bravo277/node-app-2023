@@ -38,7 +38,7 @@ jobs:
         echo $PART
 
     - name: Configure AWS Credentials v2
-      # if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -47,26 +47,27 @@ jobs:
         aws-region: ${{ env.REGION }}
 
     - uses: actions/setup-node@v2
+      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       with:
         node-version: '12'
 
     - name: Install Dependencies
-      # if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
         node --version
         npm install
 
     - name: Build Static Website
-      # if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
          npm run build
 
     - name: Copy files to the production website with the AWS CLI
-      # if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
         aws s3 sync --delete ${{ env.DIST }} s3://${{ env.BUCKET }}/${{ steps.get-tag.outputs.tag }}/
 
-    # - name: Copy files to the production website with the AWS CLI
+    # - name: Cloudfront Cache Invalidation
     #   if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
     #   run: |
     #     aws cloudfront create-invalidation \
