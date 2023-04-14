@@ -77,6 +77,12 @@ jobs:
 
         cat output.json | jq "del(.ETag) | (.DistributionConfig.Origins.Items[] | select(.Id == \"${{ env.S3_CLOUDFRONT_ORIGIN_ID }}\")).OriginPath = \"/${{ steps.get-tag.outputs.tag }}\" | .DistributionConfig" > updated-config.json
 
+        etag=`cat output.json | jq -r ".ETag"`
+
+        aws cloudfront update-distribution \
+        --id ${{ env.DIST_ID }}  --region ${{ env.REGION }} --if-match="$etag" \
+        --distribution-config file://updated-config.json
+
         # aws cloudfront create-invalidation \
         #   --distribution-id ${{ env.DIST_ID }} \
         #   --paths "/*"
