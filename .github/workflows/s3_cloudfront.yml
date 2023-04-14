@@ -47,6 +47,24 @@ jobs:
         # role-to-assume: ${{ secrets.AWS_GA_ROLE }}
         aws-region: ${{ env.REGION }}
 
+    - name: Update Cloudfront Distribution
+      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+      run: |
+
+        aws cloudfront get-distribution-config \
+        --id ${{ env.DIST_ID }} --region ${{ env.REGION }} > output.json
+
+        cat output.json | jq "del(.ETag) | (.DistributionConfig.Origins.Items[] | select(.Id == \"${{ env.S3_CLOUDFRONT_ORIGIN_ID }}\")).OriginPath = \"/${{ steps.get-tag.outputs.tag }}\" | .DistributionConfig" > updated-config.json
+
+        etag=`cat output.json | jq -r ".ETag"`
+
+        aws cloudfront update-distribution \
+        --id ${{ env.DIST_ID }}  --region ${{ env.REGION }} --if-match="$etag" \
+        --distribution-config file://updated-config.json
+
+        # aws cloudfront wait distribution-deployed \
+        # --id ${{ env.DIST_ID }}  --region ${{ env.REGION }}
+
     - uses: actions/setup-node@v2
       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       with:
@@ -67,24 +85,6 @@ jobs:
       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
         aws s3 sync ${{ env.DIST }} s3://${{ env.BUCKET }}/${{ steps.get-tag.outputs.tag }}/
-
-    - name: Update Cloudfront Distribution
-      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-      run: |
-
-        aws cloudfront get-distribution-config \
-        --id ${{ env.DIST_ID }} --region ${{ env.REGION }} > output.json
-
-        cat output.json | jq "del(.ETag) | (.DistributionConfig.Origins.Items[] | select(.Id == \"${{ env.S3_CLOUDFRONT_ORIGIN_ID }}\")).OriginPath = \"/${{ steps.get-tag.outputs.tag }}\" | .DistributionConfig" > updated-config.json
-
-        etag=`cat output.json | jq -r ".ETag"`
-
-        aws cloudfront update-distribution \
-        --id ${{ env.DIST_ID }}  --region ${{ env.REGION }} --if-match="$etag" \
-        --distribution-config file://updated-config.json
-
-        # aws cloudfront wait distribution-deployed \
-        # --id ${{ env.DIST_ID }}  --region ${{ env.REGION }}
 
     - name: Create new cache invalidation
       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
