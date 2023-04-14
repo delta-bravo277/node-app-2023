@@ -3,7 +3,7 @@ on:
   # workflow_dispatch:
   push:
     branches: [ main ]
-    
+
 jobs:
   build-and-deploy:
     name: Build and Deploy
@@ -58,7 +58,10 @@ jobs:
 
     - name: Build Static Website
       # if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-      run: npm run build
+      run: |
+         npm run build
+         mv build/ ${{ env.NEW_TAG }}/
+
 
     - name: Copy files to the production website with the AWS CLI
       # if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
