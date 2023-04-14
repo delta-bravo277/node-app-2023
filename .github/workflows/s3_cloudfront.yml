@@ -13,6 +13,7 @@ jobs:
       DIST: build
       REGION: ap-south-1
       DIST_ID: E118ZAQXPR2IFW
+      S3_CLOUDFRONT_ORIGIN_ID: github-action-nginx.s3.ap-south-1.amazonaws.com
 
     steps:
     - name: Checkout
@@ -74,7 +75,7 @@ jobs:
         aws cloudfront get-distribution-config \
         --id ${{ env.DIST_ID }} --region ${{ env.REGION }} > output.json
 
-        cat output.json
+        cat output.json | jq "del(.ETag) | (.DistributionConfig.Origins.Items[] | select(.Id == \"${{ env.S3_CLOUDFRONT_ORIGIN_ID }}\")).OriginPath = \"/${{ steps.get-tag.outputs.tag }}\" | .DistributionConfig" > updated-config.json
 
         # aws cloudfront create-invalidation \
         #   --distribution-id ${{ env.DIST_ID }} \
