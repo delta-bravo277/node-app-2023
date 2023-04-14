@@ -70,6 +70,12 @@ jobs:
     - name: Cloudfront Cache Invalidation
       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
-        aws cloudfront create-invalidation \
-          --distribution-id ${{ env.DIST_ID }} \
-          --paths "/*"
+
+        aws cloudfront get-distribution-config \
+        --id ${{ env.DIST_ID }} --region ${{ env.REGION }} > output.json
+
+        cat output.json
+
+        # aws cloudfront create-invalidation \
+        #   --distribution-id ${{ env.DIST_ID }} \
+        #   --paths "/*"
