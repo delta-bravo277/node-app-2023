@@ -86,16 +86,16 @@
 #       run: |
 #         aws s3 sync ${{ env.DIST }} s3://${{ env.BUCKET }}/${{ steps.get-tag.outputs.tag }}/
       
-#     - name: Keeping only last 5 versions
-#       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-#       run: |
-#         aws s3 ls s3://${{ env.BUCKET }}/ | sort | head -n -5
-#         #aws s3 ls s3://${{ env.BUCKET }}/ --recursive | sort -k1 | sort -k2 | head -n -30 | awk '{$1=$2=$3=""; print $0}' | sed 's/^[ \t]*//'
-#         aws s3 ls s3://${{ env.BUCKET }}/
+    - name: Keeping only last 5 versions
+      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+      run: |
+        aws s3 ls s3://${{ env.BUCKET }}/ | sort | head -n -5
+        #aws s3 ls s3://${{ env.BUCKET }}/ --recursive | sort -k1 | sort -k2 | head -n -30 | awk '{$1=$2=$3=""; print $0}' | sed 's/^[ \t]*//'
+        aws s3 ls s3://${{ env.BUCKET }}/
 
-#     # - name: Create new cache invalidation
-#     #   if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-#     #   run: |
+    # - name: Create new cache invalidation
+    #   if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+    #   run: |
 
 #     #     aws cloudfront wait distribution-deployed \
 #     #     --id ${{ env.DIST_ID }}  --region ${{ env.REGION }}
