@@ -89,7 +89,7 @@ jobs:
     - name: Keeping only last 5 versions
       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
-        aws s3 ls s3://${{ env.BUCKET }} | sort | head -n -11 | while read -r line ; do \
+        aws s3 ls s3://${{ env.BUCKET }} | sort | head -n -11 | awk '{print $2}' | while read -r line ; do \
         echo "Removing ${line}" \
         aws s3 rm s3://${{ env.BUCKET }}/${line}
         done
