@@ -90,7 +90,7 @@ jobs:
       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
         #aws s3 ls s3://${{ env.BUCKET }}/ --recursive | sort | tail -n 5 | awk '{print $4}'
-        aws s3 ls s3://your-bucket/ --recursive | sort -k1 | sort -k2 | head -n -30 | awk '{$1=$2=$3=""; print $0}' | sed 's/^[ \t]*//'
+        aws s3 ls s3://${{ env.BUCKET }}/ --recursive | sort -k1 | sort -k2 | head -n -30 | awk '{$1=$2=$3=""; print $0}' | sed 's/^[ \t]*//'
     
 
     # - name: Create new cache invalidation
