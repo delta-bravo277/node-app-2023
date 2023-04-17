@@ -10,6 +10,7 @@ jobs:
       DIST: build
       REGION: ap-south-1
       DIST_ID: E118ZAQXPR2IFW
+      S3_CLOUDFRONT_ORIGIN_ID: github-action-nginx.s3.ap-south-1.amazonaws.com
 
     steps:
     - name: Checkout  
@@ -30,12 +31,14 @@ jobs:
         aws-region: ${{ env.REGION }}
 
     - name: Update Cloudfront Distribution
+      env:
+        CURR: ${{ steps.tag.outputs.GET_TAG }}
       run: |
 
         aws cloudfront get-distribution-config \
         --id ${{ env.DIST_ID }} --region ${{ env.REGION }} > output.json
 
-        cat output.json | jq "del(.ETag) | (.DistributionConfig.Origins.Items[] | select(.Id == \"${{ steps.tag.outputs.GET_TAG }}\")).OriginPath = \"/${{ steps.get-tag.outputs.tag }}\" | .DistributionConfig" > updated-config.json
+        cat output.json | jq "del(.ETag) | (.DistributionConfig.Origins.Items[] | select(.Id == \"${{ env.S3_CLOUDFRONT_ORIGIN_ID }}\")).OriginPath = \"/"${{ steps.tag.outputs.GET_TAG }}\" | .DistributionConfig" > updated-config.json
 
         etag=`cat output.json | jq -r ".ETag"`
 
