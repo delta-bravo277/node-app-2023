@@ -12,7 +12,7 @@
     2d. Configure Workflow -> Login to Amazon ECR
     2e. Configure Workflow -> Build, tag, and push docker image to Amazon ECR
 
-==================================================
+====================================================
 
 For image tagging : 
 

@@ -13,10 +13,13 @@ jobs:
 
     steps:
     - name: Checkout  
+      id: tag
       uses: actions/checkout@v3     #To fetch the history (including tags) from within a shallow clone
     - run: |
           git fetch --prune --unshallow 
-          PREV_TAG=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))
+          #PREV_TAG=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))
+          echo "GET_TAG=$(git tag | tail -n2 | head -n1)" >> $GITHUB_OUTPUT
+          PREV_TAG=$(git tag | tail -n2 | head -n1)
           git checkout tags/$PREV_TAG
   
     - name: Configure AWS Credentials
@@ -26,24 +29,28 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.REGION }}
 
-    - uses: actions/setup-node@v2
-      with:
-        node-version: '12'
-
-    - name: Install Dependencies
+    - name: Update Cloudfront Distribution
+      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
-        node --version
-        npm install
 
-    - name: Build Static Website
-      run: npm run build
+        aws cloudfront get-distribution-config \
+        --id ${{ env.DIST_ID }} --region ${{ env.REGION }} > output.json
 
-    - name: Copy files to the production website with the AWS CLI
+        cat output.json | jq "del(.ETag) | (.DistributionConfig.Origins.Items[] | select(.Id == \"${{ steps.tag.outputs.GET_TAG }}\")).OriginPath = \"/${{ steps.get-tag.outputs.tag }}\" | .DistributionConfig" > updated-config.json
+
+        etag=`cat output.json | jq -r ".ETag"`
+
+        aws cloudfront update-distribution \
+        --id ${{ env.DIST_ID }}  --region ${{ env.REGION }} --if-match="$etag" \
+        --distribution-config file://updated-config.json
+
+    - name: Create new cache invalidation
+      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
-        aws s3 sync --delete ${{ env.DIST }} s3://${{ env.BUCKET }}
 
-    - name: Copy files to the production website with the AWS CLI
-      run: |
+        aws cloudfront wait distribution-deployed \
+        --id ${{ env.DIST_ID }}  --region ${{ env.REGION }}
+
         aws cloudfront create-invalidation \
-          --distribution-id ${{ env.DIST_ID }} \
-          --paths "/*"
+        --distribution-id ${{ env.DIST_ID }} \
+        --paths "/*" --region ${{ env.REGION }}
