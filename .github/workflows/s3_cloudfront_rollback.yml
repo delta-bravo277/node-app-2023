@@ -14,15 +14,18 @@ jobs:
 
     steps:
     - name: Checkout  
-      id: tag
       uses: actions/checkout@v3     #To fetch the history (including tags) from within a shallow clone
     - run: |
           git fetch --prune --unshallow 
-          echo "GET_TAG=v0.0.1" >> $GITHUB_OUTPUT
-          echo $GET_TAG
           PREV_TAG=$(git tag | tail -n2 | head -n1)
           git checkout tags/$PREV_TAG
-  
+
+    - name: get Tag
+      id: tag
+      run: |
+          git fetch --prune --unshallow 
+          echo "GET_TAG=$(git tag | tail -n2 | head -n1)" >> $GITHUB_OUTPUT
+          
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
