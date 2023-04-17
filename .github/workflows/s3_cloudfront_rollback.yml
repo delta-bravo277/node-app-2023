@@ -23,7 +23,6 @@ jobs:
     - name: get Tag
       id: tag
       run: |
-          git fetch --prune --unshallow 
           echo "GET_TAG=$(git tag | tail -n2 | head -n1)" >> $GITHUB_OUTPUT
           
     - name: Configure AWS Credentials
