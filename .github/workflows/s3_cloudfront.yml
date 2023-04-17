@@ -85,6 +85,12 @@ jobs:
       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
       run: |
         aws s3 sync ${{ env.DIST }} s3://${{ env.BUCKET }}/${{ steps.get-tag.outputs.tag }}/
+      
+    - name: Keeping only last 5 versions
+      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+      run: |
+        aws s3 ls s3://${{ env.BUCKET }}/ --recursive | sort | tail -n 5 | awk '{print $4}'
+    
 
     # - name: Create new cache invalidation
     #   if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
