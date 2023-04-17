@@ -1,106 +1,106 @@
-name: Build and Deploy React App to CloudFront
-on:
-  # workflow_dispatch:
-  push:
-    branches: [ main ]
+# name: Build and Deploy React App to CloudFront
+# on:
+#   # workflow_dispatch:
+#   push:
+#     branches: [ main ]
 
-jobs:
-  build-and-deploy:
-    name: Build and Deploy
-    runs-on: ubuntu-latest
-    env:
-      BUCKET: github-action-nginx
-      DIST: build
-      REGION: ap-south-1
-      DIST_ID: E118ZAQXPR2IFW
-      S3_CLOUDFRONT_ORIGIN_ID: github-action-nginx.s3.ap-south-1.amazonaws.com
+# jobs:
+#   build-and-deploy:
+#     name: Build and Deploy
+#     runs-on: ubuntu-latest
+#     env:
+#       BUCKET: github-action-nginx
+#       DIST: build
+#       REGION: ap-south-1
+#       DIST_ID: E118ZAQXPR2IFW
+#       S3_CLOUDFRONT_ORIGIN_ID: github-action-nginx.s3.ap-south-1.amazonaws.com
 
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+#     steps:
+#     - name: Checkout
+#       uses: actions/checkout@v3
 
-    - name: Assign or Get Tag
-      id: get-tag
-      uses: anothrNick/github-tag-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        REPO_OWNER: delta-bravo277
-        WITH_V: true
-        DEFAULT_BUMP: none
-        DRY_RUN: false
+#     - name: Assign or Get Tag
+#       id: get-tag
+#       uses: anothrNick/github-tag-action@master
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         REPO_OWNER: delta-bravo277
+#         WITH_V: true
+#         DEFAULT_BUMP: none
+#         DRY_RUN: false
         
-    - name: Print tag
-      id: determine-tag
-      env:
-        NEW_TAG: ${{ steps.get-tag.outputs.tag }}
-        PART: ${{ steps.get-tag.outputs.part }}
-      run: |
-        echo $NEW_TAG
-        echo $PART
+#     - name: Print tag
+#       id: determine-tag
+#       env:
+#         NEW_TAG: ${{ steps.get-tag.outputs.tag }}
+#         PART: ${{ steps.get-tag.outputs.part }}
+#       run: |
+#         echo $NEW_TAG
+#         echo $PART
 
-    - name: Configure AWS Credentials v2
-      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        # role-to-assume: ${{ secrets.AWS_GA_ROLE }}
-        aws-region: ${{ env.REGION }}
+#     - name: Configure AWS Credentials v2
+#       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+#       uses: aws-actions/configure-aws-credentials@v1
+#       with:
+#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#         # role-to-assume: ${{ secrets.AWS_GA_ROLE }}
+#         aws-region: ${{ env.REGION }}
 
-    - name: Update Cloudfront Distribution
-      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-      run: |
+#     - name: Update Cloudfront Distribution
+#       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+#       run: |
 
-        aws cloudfront get-distribution-config \
-        --id ${{ env.DIST_ID }} --region ${{ env.REGION }} > output.json
+#         aws cloudfront get-distribution-config \
+#         --id ${{ env.DIST_ID }} --region ${{ env.REGION }} > output.json
 
-        cat output.json | jq "del(.ETag) | (.DistributionConfig.Origins.Items[] | select(.Id == \"${{ env.S3_CLOUDFRONT_ORIGIN_ID }}\")).OriginPath = \"/${{ steps.get-tag.outputs.tag }}\" | .DistributionConfig" > updated-config.json
+#         cat output.json | jq "del(.ETag) | (.DistributionConfig.Origins.Items[] | select(.Id == \"${{ env.S3_CLOUDFRONT_ORIGIN_ID }}\")).OriginPath = \"/${{ steps.get-tag.outputs.tag }}\" | .DistributionConfig" > updated-config.json
 
-        etag=`cat output.json | jq -r ".ETag"`
+#         etag=`cat output.json | jq -r ".ETag"`
 
-        aws cloudfront update-distribution \
-        --id ${{ env.DIST_ID }}  --region ${{ env.REGION }} --if-match="$etag" \
-        --distribution-config file://updated-config.json
+#         aws cloudfront update-distribution \
+#         --id ${{ env.DIST_ID }}  --region ${{ env.REGION }} --if-match="$etag" \
+#         --distribution-config file://updated-config.json
 
-        # aws cloudfront wait distribution-deployed \
-        # --id ${{ env.DIST_ID }}  --region ${{ env.REGION }}
+#         # aws cloudfront wait distribution-deployed \
+#         # --id ${{ env.DIST_ID }}  --region ${{ env.REGION }}
 
-    - uses: actions/setup-node@v2
-      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-      with:
-        node-version: '12'
+#     - uses: actions/setup-node@v2
+#       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+#       with:
+#         node-version: '12'
 
-    - name: Install Dependencies
-      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-      run: |
-        node --version
-        npm install
+#     - name: Install Dependencies
+#       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+#       run: |
+#         node --version
+#         npm install
 
-    - name: Build Static Website
-      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-      run: |
-         npm run build
+#     - name: Build Static Website
+#       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+#       run: |
+#          npm run build
 
-    - name: Copy files to the production website with the AWS CLI
-      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-      run: |
-        aws s3 sync ${{ env.DIST }} s3://${{ env.BUCKET }}/${{ steps.get-tag.outputs.tag }}/
+#     - name: Copy files to the production website with the AWS CLI
+#       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+#       run: |
+#         aws s3 sync ${{ env.DIST }} s3://${{ env.BUCKET }}/${{ steps.get-tag.outputs.tag }}/
       
-    - name: Keeping only last 5 versions
-      if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-      run: |
-        aws s3 ls s3://${{ env.BUCKET }}/ | sort | head -n -5
-        #aws s3 ls s3://${{ env.BUCKET }}/ --recursive | sort -k1 | sort -k2 | head -n -30 | awk '{$1=$2=$3=""; print $0}' | sed 's/^[ \t]*//'
-        aws s3 ls s3://${{ env.BUCKET }}/
+#     - name: Keeping only last 5 versions
+#       if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+#       run: |
+#         aws s3 ls s3://${{ env.BUCKET }}/ | sort | head -n -5
+#         #aws s3 ls s3://${{ env.BUCKET }}/ --recursive | sort -k1 | sort -k2 | head -n -30 | awk '{$1=$2=$3=""; print $0}' | sed 's/^[ \t]*//'
+#         aws s3 ls s3://${{ env.BUCKET }}/
 
-    # - name: Create new cache invalidation
-    #   if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
-    #   run: |
+#     # - name: Create new cache invalidation
+#     #   if: ${{ steps.get-tag.outputs.part != '0' || steps.get-tag.outputs.part != '' }}
+#     #   run: |
 
-    #     aws cloudfront wait distribution-deployed \
-    #     --id ${{ env.DIST_ID }}  --region ${{ env.REGION }}
+#     #     aws cloudfront wait distribution-deployed \
+#     #     --id ${{ env.DIST_ID }}  --region ${{ env.REGION }}
 
-    #     aws cloudfront create-invalidation \
-    #     --distribution-id ${{ env.DIST_ID }} \
-    #     --paths "/*" --region ${{ env.REGION }}
+#     #     aws cloudfront create-invalidation \
+#     #     --distribution-id ${{ env.DIST_ID }} \
+#     #     --paths "/*" --region ${{ env.REGION }}
 
