@@ -38,7 +38,7 @@ jobs:
         aws cloudfront get-distribution-config \
         --id ${{ env.DIST_ID }} --region ${{ env.REGION }} > output.json
 
-        cat output.json | jq "del(.ETag) | (.DistributionConfig.Origins.Items[] | select(.Id == \"${{ env.S3_CLOUDFRONT_ORIGIN_ID }}\")).OriginPath = \"/"${{ steps.tag.outputs.GET_TAG }}\" | .DistributionConfig" > updated-config.json
+        cat output.json | jq "del(.ETag) | (.DistributionConfig.Origins.Items[] | select(.Id == \"${{ env.S3_CLOUDFRONT_ORIGIN_ID }}\")).OriginPath = \"/${{ steps.tag.outputs.GET_TAG }}\" | .DistributionConfig" > updated-config.json
 
         etag=`cat output.json | jq -r ".ETag"`
 
