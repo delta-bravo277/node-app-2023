@@ -13,3 +13,4 @@ function ErrorAlert(props) {
 }
 
 export default ErrorAlert;
+console.log(process.env.HOST);

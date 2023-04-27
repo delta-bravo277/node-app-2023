@@ -19,12 +19,7 @@ jobs:
           git fetch --prune --unshallow 
           PREV_TAG=$(git tag | tail -n2 | head -n1)
           git checkout tags/$PREV_TAG
-
-    - name: get Tag
-      id: tag
-      run: |
-          echo "GET_TAG=$(git tag | tail -n2 | head -n1)" >> $GITHUB_OUTPUT
-          
+    
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
