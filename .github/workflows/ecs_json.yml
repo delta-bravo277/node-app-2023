@@ -12,8 +12,8 @@ env:
   ECS_CLUSTER: github-action-ecs                 # set this to your Amazon ECS cluster name
   ECS_TASK_DEFINITION: .github/workflows/task-definition.json # set this to the path to your Amazon ECS task definition
                                                # file, e.g. .aws/task-definition.json
-  CONTAINER_NAME: ecs-deploy-container           # set this to the name of the container in the
-  IMAGE_NAME: json-test-image                                             # containerDefinitions section of your task definition
+  CONTAINER_NAME: ecs-deploy-container          # set this to the name of the container in the
+  IMAGE_NAME: 168082689495.dkr.ecr.ap-south-1.amazonaws.com/ga-ecs:7777777                                           # containerDefinitions section of your task definition
 
 permissions:
   contents: read
@@ -62,7 +62,7 @@ jobs:
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        task-definition: td11.json
+        task-definition: td.json
         container-name: ${{ env.CONTAINER_NAME }}
         image: ${{ env.IMAGE_NAME }}
 
