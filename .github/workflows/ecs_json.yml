@@ -55,7 +55,7 @@ jobs:
     - name: Get ECS task definition JSON
       id: get-td-json
       run: |
-        aws ecs describe-task-definition --task-definition ecs-depoloy > td.json
+        aws ecs describe-task-definition --task-definition ecs-deploy > td.json
         cat td.json
 
     # - name: Fill in the new image ID in the Amazon ECS task definition
