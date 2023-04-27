@@ -13,7 +13,7 @@ env:
   ECS_TASK_DEFINITION: .github/workflows/task-definition.json # set this to the path to your Amazon ECS task definition
                                                # file, e.g. .aws/task-definition.json
   CONTAINER_NAME: ecs-deploy-container           # set this to the name of the container in the
-                                               # containerDefinitions section of your task definition
+  IMAGE_NAME: json-test-image                                             # containerDefinitions section of your task definition
 
 permissions:
   contents: read
@@ -64,7 +64,7 @@ jobs:
       with:
         task-definition: td.json
         container-name: ${{ env.CONTAINER_NAME }}
-        # image: ${{ steps.build-image.outputs.image }}
+        image: ${{ env.IMAGE_NAME }}
 
     # - name: Deploy Amazon ECS task definition
     #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
