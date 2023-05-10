@@ -59,7 +59,7 @@ jobs:
     - name: Get ECS task definition JSON
       id: get-td-json
       run: |
-        aws ecs describe-task-definition --task-definition ecs-deploy:8  --query containerDefinitions > td.json
+        aws ecs describe-task-definition --task-definition ecs-deploy  --query containerDefinitions > td.json
         cat td.json
         
     - name: Fill in the new image ID in the Amazon ECS task definition
@@ -70,7 +70,7 @@ jobs:
         container-name: ${{ env.CONTAINER_NAME }}
         image: ${{ env.IMAGE_NAME }}
         environment-variables: |
-            NAME=${{ vars.NAME }}
+            ROLL=${{ vars.ROLL }}
 
     - name: Deploy Amazon ECS task definition
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
