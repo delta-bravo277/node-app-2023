@@ -68,6 +68,9 @@ jobs:
         task-definition: td.json
         container-name: ${{ env.CONTAINER_NAME }}
         image: ${{ env.IMAGE_NAME }}
+        environment-variables: |
+            NAME=${{ vars.NAME }}
+            ROLL=${{ vars.ROLL }}
 
     # - name: Deploy Amazon ECS task definition
     #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
